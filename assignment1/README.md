@@ -1,13 +1,13 @@
-# <i>Convolution Neural Networks for Visual Recognition - Assignment 1</i>
+### <i>Convolution Neural Networks for Visual Recognition - Assignment 1</i>
 
 This is the first assignment of Stanford's [CS231n](http://cs231n.stanford.edu/) course. 
 
-## Overview
+#### Overview
 In this assignment, images from the [CIFAR-10](http://www.cs.toronto.edu/~kriz/cifar.html) data set were classified.  
 
 The solutions are contained in an Ipython Notebook with training, prediction and utility algorithms in separate Python source files.
 
-## Algorithms
+#### Algorithms
 The assignment consisted of five parts:
 * K-Nearest Neighbor Classifier
 * Support Vector Machine Classifier
@@ -19,7 +19,7 @@ The assignment consisted of five parts:
 
 For each classifier, vectorized training and prediction algorithms were developed, models were trained using cross validation and hyper-parameters were tuned based on validation results. The SVM and Neural network models were further trained on higher level features, comparing accuracy results with those of raw pixel models.  
 
-## Visualizations
+#### Visualizations
 Various graphs were developed to visual the models' operation and performance.  
 * Distance matrix for KNN
 * Training loss history
