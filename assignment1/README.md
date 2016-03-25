@@ -27,6 +27,6 @@ Various graphs were developed to visual the models' operation and performance.
 * Hyper parameter influence on accuracy
 
 To gain intuition on the operation of the algorithms, images were plotted to visualize
-* Mean-centered features
+* Zero-centered features
 * Learned weights
 * Misclassified samples
