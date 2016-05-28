@@ -4,3 +4,4 @@ This repository contains projects from the Winter Quarter 2016 offering of Stanf
 
 Each subdirectory contains an assignment for the course:
 * assignment1 - KNN, SVM, Softmax and Neural Network classifiers, high-level pixel features.
+* assignment2 - Fully-connected Neural Networks, Batch Normalization, Dropout, Convolution Neural Networks on CIFAR-10 data.
