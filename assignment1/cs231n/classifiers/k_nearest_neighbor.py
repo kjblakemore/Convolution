@@ -1,5 +1,6 @@
-import math
 import numpy as np
+from past.builtins import xrange
+
 
 class KNearestNeighbor(object):
   """ a kNN classifier with L2 distance """
@@ -72,7 +73,7 @@ class KNearestNeighbor(object):
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        dists[i,j] = math.sqrt(((X[i] - self.X_train[j])**2).sum())
+        dists[i,j] = np.sqrt(np.sum((self.X_train[j,:] - X[i,:])**2))
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -94,7 +95,7 @@ class KNearestNeighbor(object):
       # Compute the l2 distance between the ith test point and all training #
       # points, and store the result in dists[i, :].                        #
       #######################################################################
-      dists[i, :] = np.sqrt(np.sum(((X[i] - self.X_train)**2), axis=1))
+      dists[i,:] = np.sqrt(np.sum((X[i] - self.X_train)**2, axis=1))
       #######################################################################
       #                         END OF YOUR CODE                            #
       #######################################################################
@@ -122,8 +123,18 @@ class KNearestNeighbor(object):
     # HINT: Try to formulate the l2 distance using matrix multiplication    #
     #       and two broadcast sums.                                         #
     #########################################################################
-    dists = np.sqrt((X**2).sum(axis=1).reshape(-1, 1) + 
-     (self.X_train**2).sum(axis=1) - 2 * X.dot(self.X_train.T))
+    
+    # The euclidean distance between X & Y can be calculated as:
+    #   sqrt(x2 + y2 - 2xy)
+
+    X_squared = np.square(X).sum(axis=1)
+    X_train_squared = np.square(self.X_train).sum(axis=1)
+
+    XY = X.dot(self.X_train.T)
+
+    dists = np.sqrt(X_squared.reshape(num_test, 1) + X_train_squared - 2 * XY)
+
+
     #########################################################################
     #                         END OF YOUR CODE                              #
     #########################################################################
@@ -154,9 +165,10 @@ class KNearestNeighbor(object):
       # testing point, and use self.y_train to find the labels of these       #
       # neighbors. Store these labels in closest_y.                           #
       # Hint: Look up the function numpy.argsort.                             #
-      #########################################################################
-      indices = np.argsort(dists[i])          # indices in sorted distance order
-      closest_y = self.y_train[indices[0:k]]  # take the k closest labels
+      ########################################################################
+
+      closest_y = self.y_train[np.argsort(dists[i,:])][:k]
+
       #########################################################################
       # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
@@ -164,8 +176,7 @@ class KNearestNeighbor(object):
       # Store this label in y_pred[i]. Break ties by choosing the smaller     #
       # label.                                                                #
       #########################################################################
-      counts = np.bincount(closest_y)   # frequency count of (integer) labels
-      y_pred[i] = np.argmax(counts)
+      y_pred[i] = np.argmax(np.bincount(closest_y))
       #########################################################################
       #                           END OF YOUR CODE                            # 
       #########################################################################

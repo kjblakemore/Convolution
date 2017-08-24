@@ -1,6 +1,8 @@
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
-
+from past.builtins import xrange
 
 class TwoLayerNet(object):
   """
@@ -67,13 +69,14 @@ class TwoLayerNet(object):
     W2, b2 = self.params['W2'], self.params['b2']
     N, D = X.shape
 
-    # Compute the forward pass f
+    # Compute the forward pass
+    scores = None
     #############################################################################
     # TODO: Perform the forward pass, computing the class scores for the input. #
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-
+    
     hidden_layer = np.maximum(X.dot(W1) + b1, 0)  # max for ReLU activation
     scores = hidden_layer.dot(W2) + b2
 
@@ -91,20 +94,23 @@ class TwoLayerNet(object):
     # TODO: Finish the forward pass, and compute the loss. This should include  #
     # both the data loss and L2 regularization for W1 and W2. Store the result  #
     # in the variable loss, which should be a scalar. Use the Softmax           #
-    # classifier loss. So that your results match ours, multiply the            #
-    # regularization loss by 0.5                                                #
+    # classifier loss.                                                          #
     #############################################################################
-    logC = -np.max(scores)  # for numerical stability when computing exponentials
 
-    # Compute probabilities for each score given the input values and weights.
-    probs = np.exp(scores + logC)
-    probs /= np.sum(probs, axis=1, keepdims=True)  # normalize probs
+    logC = -np.max(scores)  # for numerical stability when computing probablities
+
+    # Calculate probability of scores
+    exp_scores = np.exp(scores + logC)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
 
     # Compute loss from probabilities of the correct class scores.
     # User Average cross-entropy loss and regularization.
     correct_logprobs = -np.log(probs[range(N), y])  # - log of correct class probs
-    loss = np.sum(correct_logprobs)/N
-    loss += .5 * reg * np.sum(W1 * W1) + .5 * reg * np.sum(W2 * W2)
+    data_loss = np.sum(correct_logprobs) / N
+    reg_loss = reg * np.sum(W1*W1) + reg * np.sum(W2*W2)
+
+    loss = data_loss + reg_loss
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -116,23 +122,22 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    # Compute the gradient on the scores.
+    # Compute the gradient of f wrt scores.
     dscores = probs
     dscores[range(N), y] -= 1
     dscores /= N
 
-    # Backpropogate the gradient to the parameters.
-    # First backprob into weight W2 and bias b2.
-    # grads['b2'] = np.sum(dscores, axis=0, keepdims=True)
-    grads['b2'] = np.sum(dscores)
-    grads['W2'] = hidden_layer.T.dot(dscores) + reg * W2
-    # Nextm backprop into hidden layer
+    # First backprop into final fully connected layer
+    grads['b2'] = np.sum(dscores, axis=0)
+    grads['W2'] = hidden_layer.T.dot(dscores) + 2 * reg * W2
+
+    # Next, backprop into hidden layer
     dhidden = dscores.dot(W2.T)
-    dhidden[hidden_layer <= 0] = 0  # backprob the ReLU non-linearity
-    # Finally backprob into weight W1 and bias b1.
-    # grads['b1'] = np.sum(dhidden, axis=0, keepdims=True)
-    grads['b1'] = np.sum(dhidden)
-    grads['W1'] = X.T.dot(dhidden) + reg * W1
+    dhidden[hidden_layer <= 0] = 0 # backprop into ReLU non-linearity
+
+    # Finally, backprop into first fully connected layer
+    grads['b1'] = np.sum(dhidden, axis=0)
+    grads['W1'] = X.T.dot(dhidden) + 2 * reg * W1
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -141,7 +146,7 @@ class TwoLayerNet(object):
 
   def train(self, X, y, X_val, y_val,
             learning_rate=1e-3, learning_rate_decay=0.95,
-            reg=1e-5, num_iters=100,
+            reg=5e-6, num_iters=100,
             batch_size=200, verbose=False):
     """
     Train this neural network using stochastic gradient descent.
@@ -176,9 +181,9 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      indices = np.random.choice(num_train, batch_size)
-      X_batch = X[np.array(indices)]
-      y_batch = y[np.array(indices)]
+      idxs = np.random.choice(num_train, batch_size, replace=True)
+      X_batch = X[idxs]
+      y_batch = y[idxs]
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -193,7 +198,6 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-
       self.params['W1'] -= learning_rate * grads['W1']
       self.params['b1'] -= learning_rate * grads['b1']
       self.params['W2'] -= learning_rate * grads['W2']
@@ -203,7 +207,7 @@ class TwoLayerNet(object):
       #########################################################################
 
       if verbose and it % 100 == 0:
-        print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
+        print('iteration %d / %d: loss %f' % (it, num_iters, loss))
 
       # Every epoch, check train and val accuracy and decay learning rate.
       if it % iterations_per_epoch == 0:
