@@ -44,7 +44,6 @@ def svm_loss_naive(W, X, y, reg):
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
-  print('total loss: ', loss)
   loss /= num_train
 
   # Add regularization to the loss.
